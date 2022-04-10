@@ -1,0 +1,4 @@
+# Environment Variables
+*.env
+# Run Folder
+run/
