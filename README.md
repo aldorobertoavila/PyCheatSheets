@@ -4,7 +4,7 @@ An easy-going collection of Jupyter notebooks to guide anyone into Python 3 fund
 
 ## Contents
 
-- Basic syntax
+- Chapter 1. Basic Syntax
   - Constants
   - Variables
   - Aliasing
@@ -13,7 +13,7 @@ An easy-going collection of Jupyter notebooks to guide anyone into Python 3 fund
   - Operators
   - Keywords
 
-- Functional Programming
+- Chapter 2. Functional Programming
   - Built-in functions
   - Creating functions
   - Function Parameters
@@ -22,7 +22,7 @@ An easy-going collection of Jupyter notebooks to guide anyone into Python 3 fund
   - Yield generators
   - Import/Export modules
 
-- Flow control
+- Chapter 3. Flow Control
   - If statement
   - Match statement
   - For Loop
@@ -32,7 +32,7 @@ An easy-going collection of Jupyter notebooks to guide anyone into Python 3 fund
   - With-as statement
   - Raise exceptions
 
-- Data structures
+- Chapter 4. Data Structures
   - String
   - List
   - Tuples
@@ -40,37 +40,65 @@ An easy-going collection of Jupyter notebooks to guide anyone into Python 3 fund
   - Queue
   - Dictionary
 
-- Object Orientated Programming
+- Chapter 5. Object Orientated Programming
   - Instances
   - Constructor
   - Attributes
   - Methods
   - OOP principals
 
-- Multithreading
+- Chapter 6. Multithreading
   - Threading module
   - Thread lifecycle
   - Safe execution
   - Share data
 
-- Asynchronous programming
+- Chapter 7. Asynchronous programming
   - Async I/O module
   - async-await keywords
   - Task creating
   - Future gathering
 
-- Python's Standard Library
-  - dataclass
-  - os
-  - Functools
-  - Itertools
-  - Optional
-  - Logging
-
-- File management
+- Chapter 8. File management
   - Text
   - CSV
   - JSON
   - Pickle
   - Feather
   - Parquet
+  - Gzip
+
+- Appendix A. Python Standard Library
+  - enum
+  - dataclass
+  - datetime
+  - calendar
+  - random
+  - os
+  - Functools
+  - Itertools
+  - Optional
+
+- Appendix B. Development Tools
+  - dotenv
+  - unittest
+  - logging
+  - cProfile
+  - pstats
+
+- Appendix C. Data Visualization
+  - matplotLib
+  - seaborn
+
+- Appendix D. Multimedia
+  - OpenCV
+
+- Appendix E. Web
+  - requests
+  - HTTPX
+  - smtlib
+  - BeautifulSoup
+  - sockets
+
+- Appendix F. Cybersecurity
+  - Hashing
