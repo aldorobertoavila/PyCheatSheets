@@ -16,6 +16,7 @@ An easy-going collection of Jupyter notebooks to guide anyone into Python 3 fund
 - Chapter 2. Functional Programming
   - Built-in functions
   - Lambda functions
+  - Comprehension
   - Local/Global scope
   - Yield generators
   - Import/Export modules
