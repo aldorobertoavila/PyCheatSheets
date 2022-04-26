@@ -4,3 +4,5 @@
 *.env
 # Run Folder
 run/
+# Python Cache
+__pycache__
