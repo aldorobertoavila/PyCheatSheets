@@ -62,6 +62,7 @@ An easy-going collection of Jupyter notebooks to guide anyone into Python 3 fund
   - Text
   - CSV
   - JSON
+  - XML
   - Pickle
   - Feather
   - Parquet
