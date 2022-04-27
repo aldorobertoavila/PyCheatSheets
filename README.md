@@ -48,17 +48,14 @@ An easy-going collection of Jupyter notebooks to guide anyone into Python 3 fund
 
 - Chapter 6. Multithreading
   - Threading module
-  - Thread lifecycle
-  - Safe execution
-  - Share data
 
 - Chapter 7. Asynchronous programming
-  - Async I/O module
-  - async-await keywords
-  - Task creating
-  - Future gathering
+  - Asyncio module
 
-- Chapter 8. File management
+- Chapter 8. Multiprocessing
+  - Multiprocessing module
+
+- Chapter 9. File management
   - Text
   - CSV
   - JSON
