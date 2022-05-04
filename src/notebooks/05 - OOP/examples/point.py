@@ -2,7 +2,7 @@ from math import hypot
 from typing import Callable
 
 # py -m pip install attrs
-# py -m pip install attrs
+# py -m pip install matplotlib
 from attr import define, ib, validators
 import matplotlib.pyplot as plt
 
@@ -14,7 +14,7 @@ class Point:
 
     @classmethod
     def from_tuples(cls, tuples: list[tuple[int, int]]):
-        return [Point.from_tuple(tup) for tup in tuples]
+        return [cls(*tup) for tup in tuples]
 
     @classmethod
     def from_tuple(cls, tup: tuple[int, int]):
@@ -41,6 +41,22 @@ class Point:
 
     def __repr__(self):
         return f'Point(x={self.x}, y={self.y})'
+
+    def __iadd__(self, other):
+        return self.__add__(other)
+
+    def __isub__(self, other):
+        return self.__sub__(other)
+
+    def __add__(self, other):
+        if not isinstance(other, Point):
+            ValueError('Other is not a point')
+        return Point(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        if not isinstance(other, Point):
+            ValueError('Other is not a point')
+        return Point(self.x - other.x, self.y - other.y)
 
     @property
     def x(self):
