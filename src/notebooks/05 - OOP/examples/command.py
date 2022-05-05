@@ -1,5 +1,6 @@
 import asyncio
 import os
+import time
 
 from abc import ABC, abstractmethod
 from collections import deque
@@ -7,9 +8,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 import aiofiles
-import aiohttp
 import dotenv
 
+from aiohttp import ClientSession
 
 class Command(ABC):
 
@@ -27,21 +28,31 @@ class Command(ABC):
 
 
 @dataclass
-class FetchCommand():
-    urls: list[tuple[str, str]]
+class FetchCommand(Command):
+    pictures: list[tuple[str, str]]
 
-    async def fetch(self, session, url):
+    async def fetch(self, url: str, session: ClientSession):
+        start = time.time()
         async with session.get(url) as response:
-            await response.read()
+            payload = await response.read()
+            millis = 1e3 * (time.time() - start)
+            length = len(payload) / 1e3
+            print(f'{url} {millis:.2f}ms {length:.2f}kB')
+            return payload
 
-    async def write(self, path, buf):
+    async def write(self, path: str, buf: bytes):
+        start = time.time()
         async with aiofiles.open(path, mode='wb') as file:
             await file.write(buf)
+            filename = os.path.basename(path)
+            millis = 1e3 * (time.time() - start)
+            length = len(buf) / 1e3
+            print(f'{filename} {millis:.2f}ms {length:.2f}kB')
 
     async def execute(self):
-        async with aiohttp.ClientSession() as session:
-            paths, urls = self.urls
-            responses = [self.fetch(session, url) for url in urls]
+        async with ClientSession() as session:
+            paths, urls = zip(*self.pictures)
+            responses = [self.fetch(url, session) for url in urls]
             buffers = await asyncio.gather(*responses)
             files = [self.write(path, buf) for path, buf in zip(paths, buffers)]
             await asyncio.gather(*files)
@@ -55,44 +66,42 @@ class FetchCommand():
 
 @dataclass
 class CommandController:
-    undo: deque = field(default_factory=deque)
-    redo: deque = field(default_factory=deque)
+    undo_stack: deque = field(default_factory=deque)
+    redo_stack: deque = field(default_factory=deque)
 
     async def execute(self, command: Command) -> None:
         await command.execute()
-        self.redo.clear()
-        self.undo.append(command)
+        self.redo_stack.clear()
+        self.undo_stack.append(command)
 
     async def redo(self) -> None:
-        if not self.redo:
+        if not self.redo_stack:
             return
-        command = self.redo.pop()
+        command = self.redo_stack.pop()
         await command.execute()
-        self.undo.append(command)
+        self.undo_stack.append(command)
 
     async def undo(self) -> None:
-        if not self.undo:
+        if not self.undo_stack:
             return
-        command = self.undo.pop()
+        command = self.undo_stack.pop()
         await command.undo()
-        self.redo.append(command)
-
-
-def today():
-    return f'{datetime.now():%Y-%m-%d-%H-%M-%S%z}'
+        self.redo_stack.append(command)
 
 
 async def main():
     dotenv.load_dotenv()
+    folder = os.getenv('COMMAND_FOLDER')
     controller = CommandController()
     
-    folder = os.getenv('TEMP_FOLDER')
+    def today():
+        return f'{datetime.now():%Y-%m-%d-%H-%M-%S%z}'
 
     await controller.execute(FetchCommand([
         (f'{folder}/{today()}-{1075}.jpg', 'https://picsum.photos/id/1075/1000/1000'),
         (f'{folder}/{today()}-{1065}.jpg', 'https://picsum.photos/id/1065/1000/1000'),
         (f'{folder}/{today()}-{1055}.jpg', 'https://picsum.photos/id/1055/1000/1000'),
-        (f'{folder}/{today()}-{1045}.jpg', 'https://picsum.photos/id/1045/1000/1000'),
+        (f'{folder}/{today()}-{1045}.jpg', 'https://picsum.photos/id/1045/1000/1000')
     ]))
 
 if __name__ == '__main__':
