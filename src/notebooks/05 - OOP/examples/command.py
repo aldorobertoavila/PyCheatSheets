@@ -1,5 +1,6 @@
 import asyncio
 import os
+import random
 import time
 
 from abc import ABC, abstractmethod
@@ -8,14 +9,16 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 import aiofiles
+import cv2
 import dotenv
 
 from aiohttp import ClientSession
 
+
 class Command(ABC):
 
     @abstractmethod
-    async def execute(self):
+    async def execute(self, **kwargs):
         pass
 
     @abstractmethod
@@ -28,40 +31,80 @@ class Command(ABC):
 
 
 @dataclass
+class ImageCommand(Command):
+    paths: list[str] = field(default_factory=list)
+
+    @abstractmethod
+    async def process_image(self, image: cv2.Mat) -> cv2.Mat:
+        pass
+
+    async def execute(self):
+        self.images = [cv2.imread(path) for path in self.paths]
+
+        for image, path in zip(self.images, self.paths):
+            new_image = await self.process_image(image)
+            cv2.imwrite(path, new_image)
+
+    async def redo(self):
+        await self.execute()
+
+    async def undo(self):
+        for image, path in zip(self.images, self.paths):
+            cv2.imwrite(path, image)
+
+
+@dataclass
+class ConvertColorCommand(ImageCommand):
+    code: int = field(default_factory=int)
+
+    async def process_image(self, image: cv2.Mat) -> cv2.Mat:
+        return cv2.cvtColor(image, self.code)
+
+
+@dataclass
+class BlurCommand(ImageCommand):
+    ksize: tuple[int, int] = field(default_factory=tuple)
+    sigma_x: int = field(default_factory=int)
+
+    async def process_image(self, image: cv2.Mat) -> cv2.Mat:
+        return cv2.GaussianBlur(image, self.ksize, self.sigma_x)
+
+
+@dataclass
+class ResizeCommand(ImageCommand):
+    dimensions: tuple[int, int] = field(default_factory=tuple)
+
+    async def process_image(self, image: cv2.Mat) -> cv2.Mat:
+        return cv2.resize(image, self.dimensions)
+
+
+@dataclass
 class FetchCommand(Command):
-    pictures: list[tuple[str, str]]
+    paths: list[str] = field(default_factory=list)
+    urls: list[str] = field(default_factory=list)
 
     async def fetch(self, url: str, session: ClientSession):
-        start = time.time()
         async with session.get(url) as response:
-            payload = await response.read()
-            millis = 1e3 * (time.time() - start)
-            length = len(payload) / 1e3
-            print(f'{url} {millis:.2f}ms {length:.2f}kB')
-            return payload
+            return await response.read()
 
     async def write(self, path: str, buf: bytes):
-        start = time.time()
         async with aiofiles.open(path, mode='wb') as file:
             await file.write(buf)
-            filename = os.path.basename(path)
-            millis = 1e3 * (time.time() - start)
-            length = len(buf) / 1e3
-            print(f'{filename} {millis:.2f}ms {length:.2f}kB')
 
     async def execute(self):
         async with ClientSession() as session:
-            paths, urls = zip(*self.pictures)
-            responses = [self.fetch(url, session) for url in urls]
+            responses = [self.fetch(url, session) for url in self.urls]
             buffers = await asyncio.gather(*responses)
-            files = [self.write(path, buf) for path, buf in zip(paths, buffers)]
+            files = [self.write(path, buf)
+                     for path, buf in zip(self.paths, buffers)]
             await asyncio.gather(*files)
 
     async def redo(self):
-        pass
+        await self.execute()
 
     async def undo(self):
-        pass
+        for path in self.paths:
+            os.remove(path)
 
 
 @dataclass
@@ -69,7 +112,7 @@ class CommandController:
     undo_stack: deque = field(default_factory=deque)
     redo_stack: deque = field(default_factory=deque)
 
-    async def execute(self, command: Command) -> None:
+    async def execute(self, command) -> None:
         await command.execute()
         self.redo_stack.clear()
         self.undo_stack.append(command)
@@ -93,16 +136,33 @@ async def main():
     dotenv.load_dotenv()
     folder = os.getenv('COMMAND_FOLDER')
     controller = CommandController()
-    
+
     def today():
         return f'{datetime.now():%Y-%m-%d-%H-%M-%S%z}'
 
-    await controller.execute(FetchCommand([
-        (f'{folder}/{today()}-{1075}.jpg', 'https://picsum.photos/id/1075/1000/1000'),
-        (f'{folder}/{today()}-{1065}.jpg', 'https://picsum.photos/id/1065/1000/1000'),
-        (f'{folder}/{today()}-{1055}.jpg', 'https://picsum.photos/id/1055/1000/1000'),
-        (f'{folder}/{today()}-{1045}.jpg', 'https://picsum.photos/id/1045/1000/1000')
-    ]))
+    paths = [ f'{folder}/{today()}-{n}.jpg' for n in range(120, 136) ]
+    urls = [ f'https://picsum.photos/id/{n}/1000/1000' for n in range(120, 136) ]
+
+    fetch = FetchCommand(paths, urls)
+    color = ConvertColorCommand(paths, cv2.COLOR_BGR2GRAY)
+    resize = ResizeCommand(paths, (750, 750))
+    blur = BlurCommand(paths, (5, 5), cv2.BORDER_CONSTANT)
+
+    await controller.execute(fetch)
+    await controller.execute(color)
+    await controller.execute(resize)
+    await controller.execute(blur)
+    time.sleep(5)
+    await controller.undo()
+    await controller.undo()
+    await controller.undo()
+    await controller.undo()
+    time.sleep(5)
+    await controller.redo()
+    await controller.redo()
+    await controller.redo()
+    await controller.redo()
+
 
 if __name__ == '__main__':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
