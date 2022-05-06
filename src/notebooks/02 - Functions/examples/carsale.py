@@ -1,5 +1,6 @@
 from enum import Enum, unique
 
+
 @unique
 class Brand(Enum):
     AUDI = 'Audi'
@@ -9,5 +10,6 @@ class Brand(Enum):
     DODGE = 'Dodge'
     FORD = 'Ford'
 
-def ask(brand : Brand):
+
+def ask(brand: Brand):
     print(f'Hello, costumer! Are you interested in {brand.value} cars?')

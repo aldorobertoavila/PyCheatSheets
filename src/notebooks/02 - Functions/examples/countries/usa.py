@@ -1,5 +1,6 @@
 from enum import Enum, unique
 
+
 @unique
 class Demog(Enum):
     POPULATION = 329.5
