@@ -55,7 +55,7 @@ An easy-going collection of Jupyter notebooks to guide anyone into Python 3 fund
 - Chapter 8. Multiprocessing
   - Multiprocessing module
 
-- Chapter 9. File management
+- Appendix A. File management
   - Text
   - CSV
   - JSON
@@ -65,7 +65,7 @@ An easy-going collection of Jupyter notebooks to guide anyone into Python 3 fund
   - Parquet
   - Gzip
 
-- Appendix A. Python Standard Library
+- Appendix B. Python Standard Library
   - enum
   - dataclass
   - datetime
@@ -76,26 +76,26 @@ An easy-going collection of Jupyter notebooks to guide anyone into Python 3 fund
   - Itertools
   - Optional
 
-- Appendix B. Development Tools
+- Appendix C. Development Tools
   - dotenv
   - unittest
   - logging
   - cProfile
   - pstats
 
-- Appendix C. Data Visualization
+- Appendix D. Data Visualization
   - matplotLib
   - seaborn
 
-- Appendix D. Multimedia
+- Appendix E. Multimedia
   - OpenCV
 
-- Appendix E. Web
+- Appendix F. Web
   - requests
   - HTTPX
   - smtlib
   - BeautifulSoup
   - sockets
 
-- Appendix F. Cybersecurity
+- Appendix G. Cybersecurity
   - Hashing
